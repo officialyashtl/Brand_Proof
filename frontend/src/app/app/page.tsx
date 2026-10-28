@@ -424,7 +424,15 @@ export default function BrandProofWorkspace() {
               className="md:hidden p-2 rounded-lg bg-[#101F17] text-[#C3CDBF] hover:text-[#F4F1E8] border border-[rgba(230,240,224,0.1)]"
               aria-label="Toggle navigation drawer"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                width="20"
+                height="20"
+                className="w-5 h-5 shrink-0"
+                style={{ width: "20px", height: "20px", flexShrink: 0 }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>

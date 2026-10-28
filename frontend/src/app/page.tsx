@@ -20,16 +20,27 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07110D] text-[#F4F1E8] font-sans selection:bg-[#A7D76B] selection:text-[#07110D]">
+    <div className="min-h-screen bg-[#07110D] text-[#F4F1E8] font-sans selection:bg-[#A7D76B] selection:text-[#07110D] overflow-x-hidden">
       {/* ── A. NAVIGATION ── */}
-      <header className="sticky top-0 z-50 bg-[#07110D]/85 backdrop-blur-md border-b border-[rgba(230,240,224,0.08)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-[#07110D]/90 backdrop-blur-md border-b border-[rgba(230,240,224,0.08)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
           
           {/* Brand Identity / Monogram */}
           <Link href="/" className="flex items-center gap-3 group">
-            <span className="w-9 h-9 rounded-full bg-[#101F17] border border-[rgba(167,215,107,0.3)] flex items-center justify-center text-[#A7D76B] group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(167,215,107,0.15)]">
-              {/* Refined Leaf / Shield Monogram */}
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span
+              className="w-9 h-9 rounded-full bg-[#101F17] border border-[rgba(167,215,107,0.3)] flex items-center justify-center text-[#A7D76B] group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(167,215,107,0.15)] shrink-0"
+              style={{ width: "36px", height: "36px", minWidth: "36px", minHeight: "36px" }}
+            >
+              {/* Shield Monogram Icon */}
+              <svg
+                width="20"
+                height="20"
+                className="w-5 h-5 shrink-0"
+                style={{ width: "20px", height: "20px", flexShrink: 0 }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 2L4 6v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V6l-8-4z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4" />
               </svg>
@@ -68,7 +79,7 @@ export default function LandingPage() {
             <Link
               href="/app"
               id="header-launch-btn"
-              className="btn-forest-primary"
+              className="btn-forest-primary text-xs sm:text-sm"
             >
               Explore BrandProof ↗
             </Link>
@@ -77,11 +88,19 @@ export default function LandingPage() {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-[#C3CDBF] hover:text-[#F4F1E8] bg-[#101F17] border border-[rgba(230,240,224,0.1)]"
+            className="md:hidden p-2 rounded-lg text-[#C3CDBF] hover:text-[#F4F1E8] bg-[#101F17] border border-[rgba(230,240,224,0.1)] shrink-0"
             aria-label="Toggle navigation menu"
             aria-expanded={mobileMenuOpen}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              width="24"
+              height="24"
+              className="w-6 h-6 shrink-0"
+              style={{ width: "24px", height: "24px", flexShrink: 0 }}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               {mobileMenuOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               ) : (
@@ -142,22 +161,22 @@ export default function LandingPage() {
         <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#A7D76B]/8 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#15271D]/60 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
             
             {/* Left Column: Headline & Value Proposition */}
             <div className="lg:col-span-7 flex flex-col justify-center">
               
               {/* Eyebrow Pill Tag */}
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#101F17] border border-[rgba(167,215,107,0.25)] text-[#A7D76B] text-xs font-medium tracking-wide mb-6 w-fit shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-[#A7D76B] pulse-led" />
-                <span className="font-mono text-[11px] uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-[#A7D76B] pulse-led shrink-0" />
+                <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-wider">
                   BRAND INTELLIGENCE / EVIDENCE-AWARE GOVERNANCE
                 </span>
               </div>
 
               {/* Exact Hero Headline */}
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#F4F1E8] leading-[1.08] mb-6">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-[#F4F1E8] leading-[1.1] mb-6">
                 Every claim deserves<br />
                 <span className="text-[#A7D76B] inline-block mt-1">
                   credible evidence.
@@ -165,23 +184,23 @@ export default function LandingPage() {
               </h1>
 
               {/* Exact Hero Supporting Text */}
-              <p className="text-base sm:text-lg text-[#C3CDBF] leading-relaxed max-w-xl mb-8">
+              <p className="text-sm sm:text-base lg:text-lg text-[#C3CDBF] leading-relaxed max-w-xl mb-8">
                 Review marketing content against brand policies, identify unsupported claims,
                 improve risky language, and preserve accountable human decisions.
               </p>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-4 mb-12">
+              <div className="flex flex-wrap items-center gap-4 mb-10 sm:mb-12">
                 <Link
                   href="/app"
                   id="hero-launch-btn"
-                  className="btn-forest-primary text-sm px-7 py-3.5"
+                  className="btn-forest-primary text-xs sm:text-sm px-6 sm:px-7 py-3 sm:py-3.5"
                 >
                   Explore BrandProof ↗
                 </Link>
                 <a
                   href="#workflow"
-                  className="btn-forest-secondary text-sm px-7 py-3.5 flex items-center gap-2"
+                  className="btn-forest-secondary text-xs sm:text-sm px-6 sm:px-7 py-3 sm:py-3.5 flex items-center gap-2"
                 >
                   <span>See How It Works</span>
                   <span className="text-[#A7D76B]">↓</span>
@@ -189,21 +208,21 @@ export default function LandingPage() {
               </div>
 
               {/* Verified Metrics Strip */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-[rgba(230,240,224,0.08)]">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-6 sm:pt-8 border-t border-[rgba(230,240,224,0.08)]">
                 <div>
-                  <div className="font-extrabold text-2xl text-[#F4F1E8]">13</div>
+                  <div className="font-extrabold text-xl sm:text-2xl text-[#F4F1E8]">14</div>
                   <div className="text-xs text-[#8D9D8E] mt-0.5">Persisted Audits</div>
                 </div>
                 <div>
-                  <div className="font-extrabold text-2xl text-[#A7D76B]">7 Rules</div>
+                  <div className="font-extrabold text-xl sm:text-2xl text-[#A7D76B]">7 Rules</div>
                   <div className="text-xs text-[#8D9D8E] mt-0.5">Active Policies</div>
                 </div>
                 <div>
-                  <div className="font-extrabold text-2xl text-[#F4F1E8]">100%</div>
+                  <div className="font-extrabold text-xl sm:text-2xl text-[#F4F1E8]">100%</div>
                   <div className="text-xs text-[#8D9D8E] mt-0.5">Deterministic Engine</div>
                 </div>
                 <div>
-                  <div className="font-extrabold text-2xl text-[#A8D6A0]">0%</div>
+                  <div className="font-extrabold text-xl sm:text-2xl text-[#A8D6A0]">0%</div>
                   <div className="text-xs text-[#8D9D8E] mt-0.5">AI Hallucinations</div>
                 </div>
               </div>
@@ -212,12 +231,12 @@ export default function LandingPage() {
 
             {/* Right Column: Floating Review Instrument (Translucent Dark Glass) */}
             <div className="lg:col-span-5 flex justify-center">
-              <div className="w-full max-w-md frosted-glass-elevated rounded-3xl p-6 sm:p-7 relative transition-all duration-300 hover:border-[rgba(167,215,107,0.35)] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)]">
+              <div className="w-full max-w-lg frosted-glass-elevated rounded-3xl p-5 sm:p-7 relative transition-all duration-300 hover:border-[rgba(167,215,107,0.35)] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)]">
                 
                 {/* Panel Header */}
-                <div className="flex items-center justify-between border-b border-[rgba(230,240,224,0.1)] pb-4 mb-5">
+                <div className="flex items-center justify-between border-b border-[rgba(230,240,224,0.1)] pb-3.5 mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#A7D76B] pulse-led" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#A7D76B] pulse-led shrink-0" />
                     <span className="text-xs font-mono font-semibold tracking-wider text-[#F4F1E8] uppercase">
                       Review Instrument
                     </span>
@@ -228,23 +247,23 @@ export default function LandingPage() {
                 </div>
 
                 {/* Engine Disclosure Badge */}
-                <div className="mb-4 text-[11px] font-mono text-[#A7D76B] flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#A7D76B]/10 border border-[#A7D76B]/20">
+                <div className="mb-4 text-[10px] sm:text-[11px] font-mono text-[#A7D76B] flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#A7D76B]/10 border border-[#A7D76B]/20">
                   <span>ENGINE: DETERMINISTIC EVALUATION</span>
                   <span className="text-[10px] text-[#C3CDBF]">CONFIDENCE: 100%</span>
                 </div>
 
                 {/* Flagged Example Claim */}
                 <div className="mb-4">
-                  <div className="text-[11px] font-mono uppercase tracking-wider text-[#8D9D8E] mb-1.5">
+                  <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-[#8D9D8E] mb-1.5">
                     INPUT MARKETING CLAIM:
                   </div>
-                  <div className="p-3.5 rounded-xl bg-[#0B1711] border border-[rgba(230,240,224,0.1)] text-xs text-[#F4F1E8] leading-relaxed">
+                  <div className="p-3.5 rounded-xl bg-[#0B1711] border border-[rgba(230,240,224,0.1)] text-xs text-[#F4F1E8] leading-relaxed font-mono">
                     &quot;Our platform <span className="bg-[#EF9187]/20 text-[#EF9187] px-1 py-0.5 rounded font-semibold underline decoration-[#EF9187]">guarantees 2x revenue growth in just 7 days</span>.&quot;
                   </div>
                 </div>
 
                 {/* Conflict & Severity Badges */}
-                <div className="space-y-2 mb-5">
+                <div className="space-y-2 mb-4">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[#8D9D8E]">Policy Conflict:</span>
                     <span className="text-[#EF9187] font-semibold">FTC Sec. 5 Guarantee</span>
@@ -264,10 +283,10 @@ export default function LandingPage() {
                 </div>
 
                 {/* Suggested Rewrite */}
-                <div className="p-4 rounded-xl bg-[#101F17] border border-[rgba(167,215,107,0.25)] mb-5">
+                <div className="p-3.5 sm:p-4 rounded-xl bg-[#101F17] border border-[rgba(167,215,107,0.25)] mb-4">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] font-mono font-semibold text-[#A7D76B] uppercase flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#A7D76B]" />
+                    <span className="text-[10px] sm:text-[11px] font-mono font-semibold text-[#A7D76B] uppercase flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A7D76B] shrink-0" />
                       Suggested Rewrite
                     </span>
                     <button
@@ -283,9 +302,9 @@ export default function LandingPage() {
                 </div>
 
                 {/* Interactive Decision Trial */}
-                <div className="pt-4 border-t border-[rgba(230,240,224,0.1)] flex items-center justify-between">
+                <div className="pt-3.5 border-t border-[rgba(230,240,224,0.1)] flex items-center justify-between">
                   <div className="text-xs">
-                    <span className="text-[#8D9D8E] text-[11px] block">Decision State:</span>
+                    <span className="text-[#8D9D8E] text-[10px] sm:text-[11px] block">Decision State:</span>
                     <span className={`font-mono text-xs font-semibold ${
                       trialDecision === "accepted" ? "text-[#A8D6A0]" :
                       trialDecision === "rejected" ? "text-[#EF9187]" :
@@ -300,7 +319,7 @@ export default function LandingPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setTrialDecision("accepted")}
-                      className={`btn-forest-primary text-xs px-3.5 py-1.5 ${
+                      className={`btn-forest-primary text-xs px-3 sm:px-3.5 py-1.5 ${
                         trialDecision === "accepted" ? "ring-2 ring-white" : ""
                       }`}
                     >
@@ -308,7 +327,7 @@ export default function LandingPage() {
                     </button>
                     <button
                       onClick={() => setTrialDecision("rejected")}
-                      className="btn-forest-danger text-xs px-3.5 py-1.5"
+                      className="btn-forest-danger text-xs px-3 sm:px-3.5 py-1.5"
                     >
                       Reject
                     </button>
@@ -332,112 +351,172 @@ export default function LandingPage() {
       </section>
 
       {/* ── B. WORKFLOW SECTION ── */}
-      <section id="workflow" className="py-24 border-b border-[rgba(230,240,224,0.08)] bg-[#0B1711]">
+      <section id="workflow" className="py-16 sm:py-20 lg:py-24 border-b border-[rgba(230,240,224,0.08)] bg-[#0B1711]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="max-w-2xl mb-16">
+          <div className="max-w-2xl mb-12 sm:mb-16">
             <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#A7D76B] block mb-2">
               What We Do
             </span>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#F4F1E8] leading-tight">
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#F4F1E8] leading-tight">
               From marketing claims to accountable decisions.
             </h2>
-            <p className="text-[#C3CDBF] text-base sm:text-lg mt-4 leading-relaxed">
+            <p className="text-[#C3CDBF] text-sm sm:text-base lg:text-lg mt-3 sm:mt-4 leading-relaxed">
               BrandProof provides end-to-end evidence intelligence to examine claims,
               highlight regulatory friction, and preserve immutable human sign-offs.
             </p>
           </div>
 
           {/* 4 Feature Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            {/* Card 1: Content Review */}
-            <div className="p-8 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] flex flex-col justify-between group hover:border-[rgba(167,215,107,0.3)] transition-all duration-200">
+            {/* Card 1: Content Review (Document Icon) */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] flex flex-col justify-between group hover:border-[rgba(167,215,107,0.3)] transition-all duration-200">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#15271D] border border-[rgba(230,240,224,0.08)] flex items-center justify-center text-[#A7D76B] mb-6 group-hover:scale-105 transition-transform">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div
+                  className="w-12 h-12 rounded-2xl bg-[#15271D] border border-[rgba(230,240,224,0.08)] flex items-center justify-center text-[#A7D76B] mb-6 group-hover:scale-105 transition-transform shrink-0"
+                  style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    className="w-6 h-6 shrink-0"
+                    style={{ width: "24px", height: "24px", flexShrink: 0 }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-[#F4F1E8] mb-2">
+                <h3 className="text-base sm:text-lg font-bold text-[#F4F1E8] mb-2">
                   Content Review
                 </h3>
-                <p className="text-sm text-[#C3CDBF] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#C3CDBF] leading-relaxed">
                   Submit marketing copy across Social, Web, Email, and Ad campaigns for immediate tokenized claim extraction.
                 </p>
               </div>
-              <div className="pt-6 mt-6 border-t border-[rgba(230,240,224,0.06)] flex items-center justify-between">
+              <div className="pt-5 mt-6 border-t border-[rgba(230,240,224,0.06)] flex items-center justify-between">
                 <span className="text-xs text-[#8D9D8E] font-mono">01 / SUBMIT</span>
-                <Link href="/app" className="w-8 h-8 rounded-full bg-[#15271D] flex items-center justify-center text-[#A7D76B] group-hover:bg-[#A7D76B] group-hover:text-[#07110D] transition-colors">
+                <Link
+                  href="/app"
+                  className="w-8 h-8 rounded-full bg-[#15271D] flex items-center justify-center text-[#A7D76B] group-hover:bg-[#A7D76B] group-hover:text-[#07110D] transition-colors shrink-0"
+                  style={{ width: "32px", height: "32px" }}
+                >
                   →
                 </Link>
               </div>
             </div>
 
-            {/* Card 2: Policy Analysis */}
-            <div className="p-8 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] flex flex-col justify-between group hover:border-[rgba(167,215,107,0.3)] transition-all duration-200">
+            {/* Card 2: Policy Analysis (Warning Triangle Icon) */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] flex flex-col justify-between group hover:border-[rgba(167,215,107,0.3)] transition-all duration-200">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#15271D] border border-[rgba(230,240,224,0.08)] flex items-center justify-center text-[#A7D76B] mb-6 group-hover:scale-105 transition-transform">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div
+                  className="w-12 h-12 rounded-2xl bg-[#15271D] border border-[rgba(230,240,224,0.08)] flex items-center justify-center text-[#A7D76B] mb-6 group-hover:scale-105 transition-transform shrink-0"
+                  style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    className="w-6 h-6 shrink-0"
+                    style={{ width: "24px", height: "24px", flexShrink: 0 }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-[#F4F1E8] mb-2">
+                <h3 className="text-base sm:text-lg font-bold text-[#F4F1E8] mb-2">
                   Policy Analysis
                 </h3>
-                <p className="text-sm text-[#C3CDBF] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#C3CDBF] leading-relaxed">
                   Evaluate copy against 7 active deterministic policies spanning FTC compliance, guarantees, and environmental terms.
                 </p>
               </div>
-              <div className="pt-6 mt-6 border-t border-[rgba(230,240,224,0.06)] flex items-center justify-between">
+              <div className="pt-5 mt-6 border-t border-[rgba(230,240,224,0.06)] flex items-center justify-between">
                 <span className="text-xs text-[#8D9D8E] font-mono">02 / ANALYZE</span>
-                <Link href="/app" className="w-8 h-8 rounded-full bg-[#15271D] flex items-center justify-center text-[#A7D76B] group-hover:bg-[#A7D76B] group-hover:text-[#07110D] transition-colors">
+                <Link
+                  href="/app"
+                  className="w-8 h-8 rounded-full bg-[#15271D] flex items-center justify-center text-[#A7D76B] group-hover:bg-[#A7D76B] group-hover:text-[#07110D] transition-colors shrink-0"
+                  style={{ width: "32px", height: "32px" }}
+                >
                   →
                 </Link>
               </div>
             </div>
 
-            {/* Card 3: Evidence Inspection */}
-            <div className="p-8 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] flex flex-col justify-between group hover:border-[rgba(167,215,107,0.3)] transition-all duration-200">
+            {/* Card 3: Evidence Inspection (Search Icon) */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] flex flex-col justify-between group hover:border-[rgba(167,215,107,0.3)] transition-all duration-200">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#15271D] border border-[rgba(230,240,224,0.08)] flex items-center justify-center text-[#A7D76B] mb-6 group-hover:scale-105 transition-transform">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div
+                  className="w-12 h-12 rounded-2xl bg-[#15271D] border border-[rgba(230,240,224,0.08)] flex items-center justify-center text-[#A7D76B] mb-6 group-hover:scale-105 transition-transform shrink-0"
+                  style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    className="w-6 h-6 shrink-0"
+                    style={{ width: "24px", height: "24px", flexShrink: 0 }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-[#F4F1E8] mb-2">
+                <h3 className="text-base sm:text-lg font-bold text-[#F4F1E8] mb-2">
                   Evidence Inspection
                 </h3>
-                <p className="text-sm text-[#C3CDBF] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#C3CDBF] leading-relaxed">
                   Pinpoint missing empirical citations, measure evidentiary deficits, and inspect verified repository sources.
                 </p>
               </div>
-              <div className="pt-6 mt-6 border-t border-[rgba(230,240,224,0.06)] flex items-center justify-between">
+              <div className="pt-5 mt-6 border-t border-[rgba(230,240,224,0.06)] flex items-center justify-between">
                 <span className="text-xs text-[#8D9D8E] font-mono">03 / INSPECT</span>
-                <Link href="/app" className="w-8 h-8 rounded-full bg-[#15271D] flex items-center justify-center text-[#A7D76B] group-hover:bg-[#A7D76B] group-hover:text-[#07110D] transition-colors">
+                <Link
+                  href="/app"
+                  className="w-8 h-8 rounded-full bg-[#15271D] flex items-center justify-center text-[#A7D76B] group-hover:bg-[#A7D76B] group-hover:text-[#07110D] transition-colors shrink-0"
+                  style={{ width: "32px", height: "32px" }}
+                >
                   →
                 </Link>
               </div>
             </div>
 
-            {/* Card 4: Human Decisions */}
-            <div className="p-8 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] flex flex-col justify-between group hover:border-[rgba(167,215,107,0.3)] transition-all duration-200">
+            {/* Card 4: Human Decisions (Check-Circle Icon) */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] flex flex-col justify-between group hover:border-[rgba(167,215,107,0.3)] transition-all duration-200">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#15271D] border border-[rgba(230,240,224,0.08)] flex items-center justify-center text-[#A7D76B] mb-6 group-hover:scale-105 transition-transform">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div
+                  className="w-12 h-12 rounded-2xl bg-[#15271D] border border-[rgba(230,240,224,0.08)] flex items-center justify-center text-[#A7D76B] mb-6 group-hover:scale-105 transition-transform shrink-0"
+                  style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    className="w-6 h-6 shrink-0"
+                    style={{ width: "24px", height: "24px", flexShrink: 0 }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-[#F4F1E8] mb-2">
+                <h3 className="text-base sm:text-lg font-bold text-[#F4F1E8] mb-2">
                   Human Decisions
                 </h3>
-                <p className="text-sm text-[#C3CDBF] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#C3CDBF] leading-relaxed">
                   Review compliant rewrite suggestions, record accountable decisions, and persist permanent audit records in SQLite.
                 </p>
               </div>
-              <div className="pt-6 mt-6 border-t border-[rgba(230,240,224,0.06)] flex items-center justify-between">
+              <div className="pt-5 mt-6 border-t border-[rgba(230,240,224,0.06)] flex items-center justify-between">
                 <span className="text-xs text-[#8D9D8E] font-mono">04 / DECIDE</span>
-                <Link href="/app" className="w-8 h-8 rounded-full bg-[#15271D] flex items-center justify-center text-[#A7D76B] group-hover:bg-[#A7D76B] group-hover:text-[#07110D] transition-colors">
+                <Link
+                  href="/app"
+                  className="w-8 h-8 rounded-full bg-[#15271D] flex items-center justify-center text-[#A7D76B] group-hover:bg-[#A7D76B] group-hover:text-[#07110D] transition-colors shrink-0"
+                  style={{ width: "32px", height: "32px" }}
+                >
                   →
                 </Link>
               </div>
@@ -448,97 +527,107 @@ export default function LandingPage() {
       </section>
 
       {/* ── C. PRODUCT TECHNOLOGY & REALISTIC DASHBOARD PREVIEW ── */}
-      <section id="technology" className="py-24 border-b border-[rgba(230,240,224,0.08)] bg-[#07110D]">
+      <section id="technology" className="py-16 sm:py-20 lg:py-24 border-b border-[rgba(230,240,224,0.08)] bg-[#07110D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             
             {/* Left Column: Tech Description */}
             <div className="lg:col-span-5">
               <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#A7D76B] block mb-2">
                 Our Technology
               </span>
-              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#F4F1E8] leading-tight mb-6">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#F4F1E8] leading-tight mb-4 sm:mb-6">
                 Clear policies.<br />Traceable decisions.
               </h2>
-              <p className="text-[#C3CDBF] text-base leading-relaxed mb-8">
+              <p className="text-[#C3CDBF] text-sm sm:text-base leading-relaxed mb-6 sm:mb-8">
                 BrandProof connects deterministically audited brand guidelines with live marketing workflows.
                 Every claim is verified against indexed records with human sign-offs saved directly to the database.
               </p>
 
               {/* Verified Checklist */}
-              <ul className="space-y-3.5 mb-8 text-sm text-[#F4F1E8]">
+              <ul className="space-y-3 mb-6 sm:mb-8 text-xs sm:text-sm text-[#F4F1E8]">
                 <li className="flex items-center gap-3">
-                  <span className="w-5 h-5 rounded-full bg-[#A7D76B]/15 text-[#A7D76B] flex items-center justify-center text-xs font-bold">
+                  <span className="w-5 h-5 rounded-full bg-[#A7D76B]/15 text-[#A7D76B] flex items-center justify-center text-xs font-bold shrink-0">
                     ✓
                   </span>
                   <span>Real-time claim detection &amp; phrase isolation</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <span className="w-5 h-5 rounded-full bg-[#A7D76B]/15 text-[#A7D76B] flex items-center justify-center text-xs font-bold">
+                  <span className="w-5 h-5 rounded-full bg-[#A7D76B]/15 text-[#A7D76B] flex items-center justify-center text-xs font-bold shrink-0">
                     ✓
                   </span>
                   <span>Deterministic rule engines without hallucinated AI</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <span className="w-5 h-5 rounded-full bg-[#A7D76B]/15 text-[#A7D76B] flex items-center justify-center text-xs font-bold">
+                  <span className="w-5 h-5 rounded-full bg-[#A7D76B]/15 text-[#A7D76B] flex items-center justify-center text-xs font-bold shrink-0">
                     ✓
                   </span>
                   <span>Traceable evidence citation &amp; gap identification</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <span className="w-5 h-5 rounded-full bg-[#A7D76B]/15 text-[#A7D76B] flex items-center justify-center text-xs font-bold">
+                  <span className="w-5 h-5 rounded-full bg-[#A7D76B]/15 text-[#A7D76B] flex items-center justify-center text-xs font-bold shrink-0">
                     ✓
                   </span>
                   <span>Immutable SQLite audit trail for human decisions</span>
                 </li>
               </ul>
 
-              <Link href="/app" className="btn-forest-primary">
+              <Link href="/app" className="btn-forest-primary text-xs sm:text-sm">
                 Explore Workspace →
               </Link>
             </div>
 
             {/* Right Column: Realistic Dashboard Preview Card */}
             <div className="lg:col-span-7">
-              <div className="rounded-3xl border border-[rgba(230,240,224,0.12)] bg-[#101F17] p-6 sm:p-8 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)]">
+              <div className="rounded-3xl border border-[rgba(230,240,224,0.12)] bg-[#101F17] p-5 sm:p-7 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)]">
                 
                 {/* Console Top Bar */}
-                <div className="flex items-center justify-between border-b border-[rgba(230,240,224,0.08)] pb-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <span className="w-3 h-3 rounded-full bg-[#A7D76B]" />
-                    <span className="font-bold text-sm text-[#F4F1E8]">
+                <div className="flex items-center justify-between border-b border-[rgba(230,240,224,0.08)] pb-3.5 mb-5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-3 h-3 rounded-full bg-[#A7D76B] shrink-0" />
+                    <span className="font-bold text-xs sm:text-sm text-[#F4F1E8]">
                       BrandProof Console // Overview
                     </span>
                   </div>
-                  <span className="text-[11px] font-mono text-[#8D9D8E] bg-[#15271D] px-2.5 py-1 rounded-full border border-[rgba(230,240,224,0.06)]">
+                  <span className="text-[10px] sm:text-[11px] font-mono text-[#8D9D8E] bg-[#15271D] px-2.5 py-1 rounded-full border border-[rgba(230,240,224,0.06)]">
                     LIVE PERSISTENCE
                   </span>
                 </div>
 
                 {/* Metric Gauges Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-5">
                   
                   {/* Total Audits Card */}
                   <div className="p-4 rounded-2xl bg-[#0B1711] border border-[rgba(230,240,224,0.08)]">
-                    <div className="text-[11px] text-[#8D9D8E] font-mono uppercase">
+                    <div className="text-[10px] sm:text-[11px] text-[#8D9D8E] font-mono uppercase">
                       Audited Reviews
                     </div>
-                    <div className="text-3xl font-extrabold text-[#F4F1E8] mt-1">
-                      13
+                    <div className="text-2xl sm:text-3xl font-extrabold text-[#F4F1E8] mt-1">
+                      14
                     </div>
-                    <div className="text-[11px] text-[#A7D76B] mt-2 flex items-center gap-1">
+                    <div className="text-[10px] sm:text-[11px] text-[#A7D76B] mt-2 flex items-center gap-1">
                       <span>↑ 100% verified</span>
                     </div>
                   </div>
 
                   {/* Circular Compliance Gauge */}
                   <div className="p-4 rounded-2xl bg-[#0B1711] border border-[rgba(230,240,224,0.08)] flex flex-col justify-between">
-                    <div className="text-[11px] text-[#8D9D8E] font-mono uppercase">
+                    <div className="text-[10px] sm:text-[11px] text-[#8D9D8E] font-mono uppercase">
                       Policy Health
                     </div>
                     <div className="flex items-center gap-3 my-1">
-                      <div className="relative w-12 h-12 flex items-center justify-center">
-                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                      <div
+                        className="relative w-12 h-12 flex items-center justify-center shrink-0"
+                        style={{ width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" }}
+                      >
+                        <svg
+                          data-artwork="gauge"
+                          width="48"
+                          height="48"
+                          className="gauge-svg w-full h-full transform -rotate-90 shrink-0"
+                          style={{ width: "48px", height: "48px", flexShrink: 0 }}
+                          viewBox="0 0 36 36"
+                        >
                           <path
                             className="text-[#15271D]"
                             strokeWidth="3.5"
@@ -566,13 +655,13 @@ export default function LandingPage() {
 
                   {/* Active Policy Rules */}
                   <div className="p-4 rounded-2xl bg-[#0B1711] border border-[rgba(230,240,224,0.08)]">
-                    <div className="text-[11px] text-[#8D9D8E] font-mono uppercase">
+                    <div className="text-[10px] sm:text-[11px] text-[#8D9D8E] font-mono uppercase">
                       Rule Register
                     </div>
-                    <div className="text-3xl font-extrabold text-[#A7D76B] mt-1">
+                    <div className="text-2xl sm:text-3xl font-extrabold text-[#A7D76B] mt-1">
                       7 Active
                     </div>
-                    <div className="text-[11px] text-[#8D9D8E] mt-2">
+                    <div className="text-[10px] sm:text-[11px] text-[#8D9D8E] mt-2">
                       Zero unverified claims
                     </div>
                   </div>
@@ -580,36 +669,36 @@ export default function LandingPage() {
                 </div>
 
                 {/* Recent Compliance Stream */}
-                <div className="rounded-2xl bg-[#0B1711] border border-[rgba(230,240,224,0.08)] p-4">
+                <div className="rounded-2xl bg-[#0B1711] border border-[rgba(230,240,224,0.08)] p-3.5 sm:p-4">
                   <div className="text-xs font-mono font-semibold text-[#C3CDBF] mb-3 flex items-center justify-between">
                     <span>Recent Claim Stream</span>
                     <span className="text-[10px] text-[#8D9D8E]">SQLite Audit Trail</span>
                   </div>
-                  <div className="space-y-2.5 text-xs">
-                    <div className="p-2.5 rounded-lg bg-[#101F17] flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#EF9187]" />
-                        <span className="text-[#F4F1E8] truncate max-w-[240px]">&quot;Guarantees 2x revenue growth&quot;</span>
+                  <div className="space-y-2 text-xs">
+                    <div className="p-2 sm:p-2.5 rounded-lg bg-[#101F17] flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="w-2 h-2 rounded-full bg-[#EF9187] shrink-0" />
+                        <span className="text-[#F4F1E8] truncate">&quot;Guarantees 2x revenue growth&quot;</span>
                       </div>
-                      <span className="text-[10px] font-mono text-[#EF9187] bg-[#EF9187]/10 px-2 py-0.5 rounded">
+                      <span className="text-[10px] font-mono text-[#EF9187] bg-[#EF9187]/10 px-2 py-0.5 rounded shrink-0">
                         Critical Risk
                       </span>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-[#101F17] flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#E5BD75]" />
-                        <span className="text-[#F4F1E8] truncate max-w-[240px]">&quot;500,000+ happy customers&quot;</span>
+                    <div className="p-2 sm:p-2.5 rounded-lg bg-[#101F17] flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="w-2 h-2 rounded-full bg-[#E5BD75] shrink-0" />
+                        <span className="text-[#F4F1E8] truncate">&quot;500,000+ happy customers&quot;</span>
                       </div>
-                      <span className="text-[10px] font-mono text-[#E5BD75] bg-[#E5BD75]/10 px-2 py-0.5 rounded">
+                      <span className="text-[10px] font-mono text-[#E5BD75] bg-[#E5BD75]/10 px-2 py-0.5 rounded shrink-0">
                         Substantiation Needed
                       </span>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-[#101F17] flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#A8D6A0]" />
-                        <span className="text-[#F4F1E8] truncate max-w-[240px]">&quot;Pilot users reported revenue gains&quot;</span>
+                    <div className="p-2 sm:p-2.5 rounded-lg bg-[#101F17] flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="w-2 h-2 rounded-full bg-[#A8D6A0] shrink-0" />
+                        <span className="text-[#F4F1E8] truncate">&quot;Pilot users reported revenue gains&quot;</span>
                       </div>
-                      <span className="text-[10px] font-mono text-[#A8D6A0] bg-[#A8D6A0]/10 px-2 py-0.5 rounded">
+                      <span className="text-[10px] font-mono text-[#A8D6A0] bg-[#A8D6A0]/10 px-2 py-0.5 rounded shrink-0">
                         Compliant Rewrite
                       </span>
                     </div>
@@ -624,24 +713,24 @@ export default function LandingPage() {
       </section>
 
       {/* ── D. BRAND POLICY REGISTER ── */}
-      <section id="policies" className="py-24 border-b border-[rgba(230,240,224,0.08)] bg-[#0B1711]">
+      <section id="policies" className="py-16 sm:py-20 lg:py-24 border-b border-[rgba(230,240,224,0.08)] bg-[#0B1711]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
+          <div className="flex flex-wrap items-end justify-between gap-6 mb-10 sm:mb-12">
             <div>
               <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#A7D76B] block mb-2">
                 Policy Register
               </span>
-              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#F4F1E8]">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#F4F1E8]">
                 07 Implemented Brand Policies
               </h2>
-              <p className="text-[#C3CDBF] text-base mt-2">
+              <p className="text-[#C3CDBF] text-sm sm:text-base mt-2">
                 Active deterministic verification criteria evaluated in every review.
               </p>
             </div>
             <Link
               href="/app"
-              className="btn-forest-secondary text-xs px-5 py-2.5"
+              className="btn-forest-secondary text-xs px-4 sm:px-5 py-2 sm:py-2.5"
             >
               Open Full Guidelines Workspace →
             </Link>
@@ -650,7 +739,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* Policy 1 */}
-            <div className="p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono font-bold text-[#A7D76B]">FTC-01</span>
                 <span className="px-2 py-0.5 rounded-full bg-[#EF9187]/15 text-[#EF9187] text-[10px] font-bold font-mono">
@@ -666,7 +755,7 @@ export default function LandingPage() {
             </div>
 
             {/* Policy 2 */}
-            <div className="p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono font-bold text-[#A7D76B]">FTC-02</span>
                 <span className="px-2 py-0.5 rounded-full bg-[#EF9187]/15 text-[#EF9187] text-[10px] font-bold font-mono">
@@ -682,7 +771,7 @@ export default function LandingPage() {
             </div>
 
             {/* Policy 3 */}
-            <div className="p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono font-bold text-[#A7D76B]">FTC-03</span>
                 <span className="px-2 py-0.5 rounded-full bg-[#EF9187]/15 text-[#EF9187] text-[10px] font-bold font-mono">
@@ -698,7 +787,7 @@ export default function LandingPage() {
             </div>
 
             {/* Policy 4 */}
-            <div className="p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono font-bold text-[#A7D76B]">FTC-04</span>
                 <span className="px-2 py-0.5 rounded-full bg-[#E5BD75]/15 text-[#E5BD75] text-[10px] font-bold font-mono">
@@ -714,7 +803,7 @@ export default function LandingPage() {
             </div>
 
             {/* Policy 5 */}
-            <div className="p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono font-bold text-[#A7D76B]">ENV-01</span>
                 <span className="px-2 py-0.5 rounded-full bg-[#EF9187]/15 text-[#EF9187] text-[10px] font-bold font-mono">
@@ -730,7 +819,7 @@ export default function LandingPage() {
             </div>
 
             {/* Policy 6 */}
-            <div className="p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)]">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono font-bold text-[#A7D76B]">TON-01</span>
                 <span className="px-2 py-0.5 rounded-full bg-[#E5BD75]/15 text-[#E5BD75] text-[10px] font-bold font-mono">
@@ -750,29 +839,29 @@ export default function LandingPage() {
       </section>
 
       {/* ── E. CLOSING CTA BANNER ── */}
-      <section className="py-20 bg-[#07110D]">
+      <section className="py-14 sm:py-20 bg-[#07110D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Panoramic Rounded Banner Card (Inspired by reference bottom card) */}
-          <div className="rounded-3xl p-8 sm:p-12 border border-[rgba(230,240,224,0.12)] bg-gradient-to-r from-[#101F17] to-[#15271D] relative overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
+          {/* Panoramic Rounded Banner Card */}
+          <div className="rounded-3xl p-6 sm:p-10 lg:p-12 border border-[rgba(230,240,224,0.12)] bg-gradient-to-r from-[#101F17] to-[#15271D] relative overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
             
             {/* Visual glow element */}
             <div className="absolute -left-10 -bottom-10 w-64 h-64 bg-[#A7D76B]/10 rounded-full blur-3xl pointer-events-none" />
 
             <div className="max-w-xl relative z-10">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#F4F1E8] tracking-tight mb-3">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#F4F1E8] tracking-tight mb-2 sm:mb-3">
                 Make every claim accountable.
               </h2>
-              <p className="text-[#C3CDBF] text-sm sm:text-base leading-relaxed">
+              <p className="text-[#C3CDBF] text-xs sm:text-sm lg:text-base leading-relaxed">
                 Give your team a clearer path from marketing copy to evidence-aware decisions.
               </p>
             </div>
 
-            <div className="relative z-10 flex flex-wrap items-center gap-4">
+            <div className="relative z-10 flex flex-wrap items-center gap-4 shrink-0">
               <Link
                 href="/app"
                 id="footer-launch-btn"
-                className="btn-forest-primary text-sm px-8 py-4"
+                className="btn-forest-primary text-xs sm:text-sm px-6 sm:px-8 py-3 sm:py-4"
               >
                 Explore BrandProof ↗
               </Link>
@@ -784,13 +873,16 @@ export default function LandingPage() {
       </section>
 
       {/* ── F. FOOTER ── */}
-      <footer className="bg-[#050C09] border-t border-[rgba(230,240,224,0.08)] text-[#8D9D8E] text-xs py-14">
+      <footer className="bg-[#050C09] border-t border-[rgba(230,240,224,0.08)] text-[#8D9D8E] text-xs py-12 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
           
           {/* Identity */}
           <div>
             <div className="flex items-center gap-2.5 mb-3">
-              <span className="w-7 h-7 rounded-full bg-[#101F17] border border-[#A7D76B]/30 flex items-center justify-center text-[#A7D76B] text-xs">
+              <span
+                className="w-7 h-7 rounded-full bg-[#101F17] border border-[#A7D76B]/30 flex items-center justify-center text-[#A7D76B] text-xs shrink-0"
+                style={{ width: "28px", height: "28px" }}
+              >
                 BP
               </span>
               <span className="font-bold text-sm text-[#F4F1E8]">BrandProof</span>

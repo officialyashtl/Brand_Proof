@@ -63,6 +63,31 @@ body {
   background: #07110D;
 }
 
+/* Controlled SVG Icon Behavior - Never allow interface SVGs to balloon to 100% */
+svg {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Guard against unconstrained SVG scaling */
+svg:not([data-artwork]) {
+  max-width: 100%;
+}
+
+/* Explicit fallback sizing for standard icon classes */
+svg.w-4, svg.h-4 { width: 16px; height: 16px; min-width: 16px; min-height: 16px; }
+svg.w-5, svg.h-5 { width: 20px; height: 20px; min-width: 20px; min-height: 20px; }
+svg.w-6, svg.h-6 { width: 24px; height: 24px; min-width: 24px; min-height: 24px; }
+svg.w-8, svg.h-8 { width: 32px; height: 32px; min-width: 32px; min-height: 32px; }
+
+/* Allow explicit circular gauges to scale within their containers */
+svg[data-artwork="gauge"],
+svg.gauge-svg {
+  width: 100%;
+  height: 100%;
+}
+
 /* Organic Selection Highlight */
 ::selection {
   background: #A7D76B;
