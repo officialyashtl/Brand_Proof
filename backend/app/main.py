@@ -19,12 +19,12 @@ from __future__ import annotations
 
 import uuid
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Dict
+from typing import Any, AsyncGenerator, Dict, List
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import init_db, load_review, save_decision, save_review
+from .database import init_db, load_all_reviews, load_review, save_decision, save_review
 from .models import DecisionRequest, ReviewRequest, ReviewResponse
 from .rules import run_rules
 
@@ -97,9 +97,23 @@ def create_review(body: ReviewRequest) -> ReviewResponse:
         brand_id=body.brand_id,
         channel=body.channel,
         findings=findings,
+        content=body.content,
     )
     save_review(review, body.content)
     return review
+
+
+@app.get(
+    "/api/reviews",
+    response_model=List[ReviewResponse],
+    summary="List all previously saved reviews",
+)
+def list_reviews(limit: int = 50, offset: int = 0) -> List[ReviewResponse]:
+    """
+    Retrieve history of all submitted content reviews with findings
+    and human decisions, ordered most recent first.
+    """
+    return load_all_reviews(limit=limit, offset=offset)
 
 
 @app.get(

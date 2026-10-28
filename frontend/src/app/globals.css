@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f1f5f9;
-  --foreground: #0f1623;
+  --background: #f0f2f5;
+  --foreground: #0f1828;
+  --sidebar-bg: #0d1520;
+  --sidebar-border: rgba(255,255,255,0.06);
+  --teal-accent: #14b8a6;
+  --teal-light: #99f6e4;
+  --surface: #ffffff;
+  --surface-subtle: #f8fafc;
+  --border: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --text-primary: #0f1828;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
 }
 
 @theme inline {
@@ -31,9 +42,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
+/* Focus rings */
+:focus-visible {
+  outline: 2px solid #14b8a6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Smooth transitions for interactive elements */
+button, select, textarea, input {
+  transition-property: color, background-color, border-color, box-shadow, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Workspace scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -44,4 +69,12 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Sidebar scrollbar — thinner and darker */
+aside ::-webkit-scrollbar {
+  width: 3px;
+}
+aside ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
 }

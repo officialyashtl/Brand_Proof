@@ -119,7 +119,50 @@ def load_review(review_id: str) -> Optional[ReviewResponse]:
             channel=Channel(row["channel"]),
             findings=findings,
             human_decisions=decisions,
+            created_at=row["created_at"],
+            content=row["content"],
         )
+
+
+def load_all_reviews(limit: int = 50, offset: int = 0) -> List[ReviewResponse]:
+    with _get_conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT * FROM reviews
+            ORDER BY datetime(created_at) DESC, rowid DESC
+            LIMIT ? OFFSET ?
+            """,
+            (limit, offset),
+        ).fetchall()
+        reviews: List[ReviewResponse] = []
+        for row in rows:
+            findings_data = json.loads(row["findings"])
+            findings = [
+                Finding(
+                    id=f["id"],
+                    type=FindingType(f["type"]),
+                    severity=Severity(f["severity"]),
+                    text=f["text"],
+                    reason=f["reason"],
+                    evidence_status=EvidenceStatus(f["evidence_status"]),
+                    source_ids=f.get("source_ids", []),
+                    suggestion=f["suggestion"],
+                )
+                for f in findings_data
+            ]
+            decisions = _load_decisions(conn, row["review_id"])
+            reviews.append(
+                ReviewResponse(
+                    review_id=row["review_id"],
+                    brand_id=row["brand_id"],
+                    channel=Channel(row["channel"]),
+                    findings=findings,
+                    human_decisions=decisions,
+                    created_at=row["created_at"],
+                    content=row["content"],
+                )
+            )
+        return reviews
 
 
 def _load_decisions(

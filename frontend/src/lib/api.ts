@@ -61,6 +61,8 @@ export interface ReviewResponse {
   analysis_mode: "rule_based_demo";
   findings: Finding[];
   human_decisions: HumanDecision[];
+  created_at?: string | null;
+  content?: string | null;
 }
 
 /**
@@ -220,3 +222,42 @@ export async function getReview(reviewId: string): Promise<ReviewResponse> {
     );
   }
 }
+
+/**
+ * Fetch all saved reviews from the backend review history.
+ */
+export async function getReviews(
+  limit = 50,
+  offset = 0
+): Promise<ReviewResponse[]> {
+  const url = `${API_BASE_URL}/api/reviews?limit=${limit}&offset=${offset}`;
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new ApiError(
+        `Failed to fetch review history (${res.status})`,
+        res.status
+      );
+    }
+
+    return (await res.json()) as ReviewResponse[];
+  } catch (err: unknown) {
+    if (err instanceof ApiError) {
+      throw err;
+    }
+    const message =
+      err instanceof Error && err.message
+        ? err.message
+        : "Failed to connect to backend server";
+    throw new ApiError(
+      `Unable to connect to BrandProof API at ${API_BASE_URL}. (${message})`
+    );
+  }
+}
+

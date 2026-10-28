@@ -481,3 +481,59 @@ class TestOriginalEndpoints:
         body = r.json()
         assert body["status"] == "ok"
         assert body["service"] == "brandproof-api"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 8. List reviews (Review history)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestListReviews:
+    def test_list_reviews_returns_200_and_list(self):
+        r = client.get("/api/reviews")
+        assert r.status_code == 200
+        assert isinstance(r.json(), list)
+
+    def test_list_reviews_contains_created_review(self):
+        content = "Brand unique test content with guarantees 2x revenue."
+        created = _post_review(content, channel="email")
+        assert created.status_code == 201
+        review_id = created.json()["review_id"]
+
+        r = client.get("/api/reviews")
+        assert r.status_code == 200
+        items = r.json()
+        matching = [item for item in items if item["review_id"] == review_id]
+        assert len(matching) == 1
+        assert matching[0]["channel"] == "email"
+        assert matching[0]["content"] == content
+        assert len(matching[0]["findings"]) > 0
+
+    def test_list_reviews_includes_human_decisions(self):
+        created = _post_review("Guarantees 2x revenue in 7 days.")
+        review_id = created.json()["review_id"]
+        finding_id = created.json()["findings"][0]["id"]
+
+        # Accept the finding
+        dec_res = client.post(
+            f"/api/reviews/{review_id}/decision",
+            json={"finding_id": finding_id, "action": "accepted", "note": "Approved by reviewer"},
+        )
+        assert dec_res.status_code == 200
+
+        # Retrieve all reviews
+        r = client.get("/api/reviews")
+        assert r.status_code == 200
+        items = r.json()
+        matching = next(item for item in items if item["review_id"] == review_id)
+        assert len(matching["human_decisions"]) == 1
+        assert matching["human_decisions"][0]["finding_id"] == finding_id
+        assert matching["human_decisions"][0]["action"] == "accepted"
+        assert matching["human_decisions"][0]["note"] == "Approved by reviewer"
+
+    def test_list_reviews_pagination_limit(self):
+        r = client.get("/api/reviews?limit=2")
+        assert r.status_code == 200
+        items = r.json()
+        assert len(items) <= 2
+

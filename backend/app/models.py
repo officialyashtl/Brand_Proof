@@ -103,5 +103,7 @@ class ReviewResponse(BaseModel):
     analysis_mode: Literal["rule_based_demo"] = "rule_based_demo"
     findings: List[Finding]
     human_decisions: List[HumanDecision] = Field(default_factory=list)
+    created_at: Optional[str] = None
+    content: Optional[str] = None
 
     model_config = {"populate_by_name": True}
