@@ -16,7 +16,7 @@ This is clearly communicated in every review response via the `analysis_mode` fi
 
 from __future__ import annotations
 
-
+import os
 import uuid
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, Dict, List
@@ -25,10 +25,34 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import init_db, load_all_reviews, load_review, save_decision, save_review
-from .models import DecisionRequest, ReviewRequest, ReviewResponse
+from .models import DecisionAction, DecisionRequest, ReviewRequest, ReviewResponse
 from .rules import run_rules
 
 # ─── App setup ────────────────────────────────────────────────────────────────
+
+ALLOWED_ORIGINS: List[str] = [
+    # Production Vercel deployments
+    "https://brand-proof-teal.vercel.app",
+    "https://brand-proof-qdnjl5bwd-powerr-house.vercel.app",
+    "https://brand-proof-k989hojkq-powerr-house.vercel.app",
+    # Local development
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+
+def get_allowed_origins() -> List[str]:
+    """Retrieve allowed CORS origins combining defaults and environment overrides."""
+    origins = list(ALLOWED_ORIGINS)
+    env_origins = os.getenv("ALLOWED_ORIGINS") or os.getenv("CORS_ORIGINS")
+    if env_origins:
+        for origin in env_origins.split(","):
+            cleaned = origin.strip().rstrip("/")
+            if cleaned and cleaned not in origins:
+                origins.append(cleaned)
+    return origins
 
 
 @asynccontextmanager
@@ -51,10 +75,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS", "HEAD", "PUT", "DELETE", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,
 )
 
 
@@ -172,3 +198,102 @@ def record_decision(review_id: str, body: DecisionRequest) -> ReviewResponse:
     updated = load_review(review_id)
     assert updated is not None  # just saved, must exist
     return updated
+
+
+# ─── Guidelines & Metrics endpoints ──────────────────────────────────────────
+
+
+GUIDELINES_DATA: List[Dict[str, Any]] = [
+    {
+        "id": "absolute_guarantee",
+        "name": "Absolute Performance Guarantees",
+        "severity": "high",
+        "category": "Regulatory & Legal",
+        "description": "Prohibits unqualified performance guarantees (e.g., 'guarantees 2x revenue') without verifiable empirical conditions.",
+    },
+    {
+        "id": "clinical_claim",
+        "name": "Unsubstantiated Clinical Claims",
+        "severity": "high",
+        "category": "Regulatory & Medical",
+        "description": "Flags clinical assertions ('clinically proven', 'scientifically validated') lacking formal FDA/clinical trial documentation.",
+    },
+    {
+        "id": "prohibited_term",
+        "name": "Prohibited Terminology",
+        "severity": "high",
+        "category": "Brand Safety",
+        "description": "Prevents legally indefensible absolute assurances such as 'risk-free' and '100% guaranteed'.",
+    },
+    {
+        "id": "superlative_ranking",
+        "name": "Superlative & Ranking Claims",
+        "severity": "medium",
+        "category": "Market Positioning",
+        "description": "Requires independent third-party market research citations for '#1', 'most trusted', or ranking claims.",
+    },
+    {
+        "id": "customer_count",
+        "name": "Unverified Customer Metrics",
+        "severity": "medium",
+        "category": "Factual Verification",
+        "description": "Requires empirical database metrics for claims specifying customer counts ('500,000+ customers', 'thousands of businesses').",
+    },
+    {
+        "id": "comparative_claim",
+        "name": "Comparative Superiority Claims",
+        "severity": "medium",
+        "category": "Competitive Compliance",
+        "description": "Claims of superiority over unnamed competitors require substantiated benchmark data.",
+    },
+    {
+        "id": "vague_superlative",
+        "name": "Vague Superlative Language",
+        "severity": "low",
+        "category": "Brand Voice & Style",
+        "description": "Flags exaggerated, non-specific superlatives ('revolutionary', 'unprecedented') to preserve credible brand voice.",
+    },
+]
+
+
+@app.get(
+    "/api/guidelines",
+    summary="List active brand guidelines and compliance rules",
+)
+def get_guidelines() -> Dict[str, Any]:
+    """Retrieve all brand governance policies enforced by the deterministic analysis engine."""
+    return {"guidelines": GUIDELINES_DATA, "total": len(GUIDELINES_DATA)}
+
+
+@app.get(
+    "/api/metrics",
+    summary="Get workspace compliance metrics",
+)
+def get_metrics() -> Dict[str, Any]:
+    """Calculate and return workspace compliance statistics from recorded reviews."""
+    reviews = load_all_reviews(limit=1000)
+    total_reviews = len(reviews)
+    total_findings = sum(len(r.findings) for r in reviews)
+    total_decisions = sum(len(r.human_decisions) for r in reviews)
+    accepted_decisions = sum(
+        sum(1 for d in r.human_decisions if d.action == DecisionAction.accepted)
+        for r in reviews
+    )
+    rejected_decisions = sum(
+        sum(1 for d in r.human_decisions if d.action == DecisionAction.rejected)
+        for r in reviews
+    )
+    compliance_score = (
+        round((accepted_decisions / total_decisions) * 100)
+        if total_decisions > 0
+        else 100
+    )
+    return {
+        "total_reviews": total_reviews,
+        "total_findings": total_findings,
+        "total_decisions": total_decisions,
+        "accepted_decisions": accepted_decisions,
+        "rejected_decisions": rejected_decisions,
+        "compliance_score": compliance_score,
+    }
+

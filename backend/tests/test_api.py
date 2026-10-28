@@ -537,3 +537,80 @@ class TestListReviews:
         items = r.json()
         assert len(items) <= 2
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 9. CORS Middleware & Preflight verification
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestCORS:
+    @pytest.mark.parametrize(
+        "origin",
+        [
+            "https://brand-proof-teal.vercel.app",
+            "https://brand-proof-qdnjl5bwd-powerr-house.vercel.app",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ],
+    )
+    def test_cors_allowed_origins_preflight(self, origin: str):
+        headers = {
+            "Origin": origin,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        }
+        r = client.options("/api/reviews", headers=headers)
+        assert r.status_code == 200
+        assert r.headers.get("access-control-allow-origin") == origin
+        assert "POST" in r.headers.get("access-control-allow-methods", "")
+
+    def test_cors_disallowed_origin_preflight(self):
+        headers = {
+            "Origin": "https://malicious-untrusted-origin.com",
+            "Access-Control-Request-Method": "POST",
+        }
+        r = client.options("/api/reviews", headers=headers)
+        # Disallowed origin does not get Access-Control-Allow-Origin header
+        assert "access-control-allow-origin" not in r.headers
+
+    def test_cors_actual_post_request(self):
+        origin = "https://brand-proof-teal.vercel.app"
+        r = client.post(
+            "/api/reviews",
+            json={"content": "Clean marketing update without claims.", "channel": "social"},
+            headers={"Origin": origin},
+        )
+        assert r.status_code == 201
+        assert r.headers.get("access-control-allow-origin") == origin
+        assert r.headers.get("access-control-allow-credentials") == "true"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 10. Guidelines & Metrics Endpoints
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestGuidelinesAndMetrics:
+    def test_guidelines_endpoint(self):
+        r = client.get("/api/guidelines")
+        assert r.status_code == 200
+        data = r.json()
+        assert "guidelines" in data
+        assert data["total"] == len(data["guidelines"])
+        assert data["total"] >= 7
+        rule_ids = [g["id"] for g in data["guidelines"]]
+        assert "absolute_guarantee" in rule_ids
+        assert "prohibited_term" in rule_ids
+
+    def test_metrics_endpoint(self):
+        r = client.get("/api/metrics")
+        assert r.status_code == 200
+        data = r.json()
+        assert "total_reviews" in data
+        assert "total_findings" in data
+        assert "accepted_decisions" in data
+        assert "rejected_decisions" in data
+        assert "compliance_score" in data
+        assert isinstance(data["total_reviews"], int)
+
+
