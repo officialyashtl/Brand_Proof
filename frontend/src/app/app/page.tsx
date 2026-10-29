@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   createReview,
   getReviews,
+  getReview,
   submitDecision,
   Channel,
   Severity,
@@ -12,8 +13,10 @@ import {
   ReviewResponse,
   FINDING_TYPE_LABELS,
   ApiError,
-  API_BASE_URL,
 } from "@/lib/api";
+import FindingDecisionControl from "./FindingDecisionControl";
+import IntelligenceLab from "./IntelligenceLab";
+import ReviewerAssistant from "./ReviewerAssistant";
 
 // ─── Benchmark Demo Data ────────────────────────────────────────────────────────
 
@@ -161,6 +164,7 @@ export default function BrandProofWorkspace() {
   const [historyLoading, setHistoryLoading] = useState<boolean>(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [expandedReviewId, setExpandedReviewId] = useState<string | null>(null);
+  const [assistantFindingId, setAssistantFindingId] = useState<string | null>(null);
 
   async function loadHistory() {
     setHistoryLoading(true);
@@ -180,12 +184,32 @@ export default function BrandProofWorkspace() {
     }
   }
 
-  // Load history on initial mount for dashboard metrics
+  // Load history on initial mount for dashboard metrics and restore active review if present
   useEffect(() => {
     let active = true;
     getReviews()
       .then((data) => {
-        if (active) setHistoryReviews(data);
+        if (!active) return;
+        setHistoryReviews(data);
+
+        // Synchronize active review from sessionStorage across page reloads
+        if (typeof window !== "undefined") {
+          const savedActiveId = sessionStorage.getItem("brandproof_active_review_id");
+          if (savedActiveId) {
+            const matched = data.find((r) => r.review_id === savedActiveId);
+            if (matched) {
+              setReview(matched);
+            } else {
+              getReview(savedActiveId)
+                .then((fetched) => {
+                  if (active && fetched) setReview(fetched);
+                })
+                .catch(() => {
+                  sessionStorage.removeItem("brandproof_active_review_id");
+                });
+            }
+          }
+        }
       })
       .catch((err: unknown) => {
         if (active) {
@@ -213,6 +237,13 @@ export default function BrandProofWorkspace() {
         brand_id: "demo-brand",
       });
       setReview(res);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("brandproof_active_review_id", res.review_id);
+      }
+      // Immediately prepend into history list so dashboard metrics stay strictly in sync
+      setHistoryReviews((prev) =>
+        prev ? [res, ...prev.filter((r) => r.review_id !== res.review_id)] : [res]
+      );
       setActionError({});
     } catch (err: unknown) {
       if (err instanceof ApiError) {
@@ -238,8 +269,9 @@ export default function BrandProofWorkspace() {
     const revId = targetReviewId || review?.review_id;
     if (!revId) return;
 
-    setActionInProgress((prev) => ({ ...prev, [findingId]: action }));
-    setActionError((prev) => ({ ...prev, [findingId]: null }));
+    const actionKey = `${revId}:${findingId}`;
+    setActionInProgress((prev) => ({ ...prev, [actionKey]: action }));
+    setActionError((prev) => ({ ...prev, [actionKey]: null }));
 
     try {
       const updated = await submitDecision(revId, {
@@ -247,23 +279,23 @@ export default function BrandProofWorkspace() {
         action,
       });
 
-      // Update current review state if matching
-      if (review && review.review_id === revId) {
-        setReview(updated);
-      }
+      // Update current review state safely using functional updater
+      setReview((prev) => (prev && prev.review_id === revId ? updated : prev));
 
       // Update history state if loaded
       setHistoryReviews((prev) =>
-        prev ? prev.map((r) => (r.review_id === revId ? updated : r)) : null
+        prev
+          ? prev.map((r) => (r.review_id === revId ? updated : r))
+          : [updated]
       );
     } catch (err: unknown) {
       const msg =
         err instanceof Error
           ? err.message
           : "Failed to record decision on backend.";
-      setActionError((prev) => ({ ...prev, [findingId]: msg }));
+      setActionError((prev) => ({ ...prev, [actionKey]: msg }));
     } finally {
-      setActionInProgress((prev) => ({ ...prev, [findingId]: null }));
+      setActionInProgress((prev) => ({ ...prev, [actionKey]: null }));
     }
   }
 
@@ -376,32 +408,26 @@ export default function BrandProofWorkspace() {
               }}
             />
             <NavItem
-              id="nav-settings"
+              id="nav-intelligence-lab"
               code="05"
-              label="Settings"
-              active={activeNav === "settings"}
+              label="Intelligence Lab"
+              active={activeNav === "lab"}
               onClick={() => {
-                setActiveNav("settings");
+                setActiveNav("lab");
                 setMobileSidebarOpen(false);
+                loadHistory();
               }}
             />
           </nav>
         </div>
 
-        {/* Sidebar Footer Telemetry */}
-        <div className="p-4 border-t border-[rgba(230,240,224,0.08)] font-mono text-[11px] text-[#8D9D8E] space-y-2 bg-[#07110D]">
-          <div className="flex justify-between items-center">
-            <span>ENGINE:</span>
-            <span className="text-[#A7D76B] font-semibold">DETERMINISTIC</span>
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-[rgba(230,240,224,0.08)] text-[11px] text-[#8D9D8E] bg-[#07110D]">
+          <div className="flex items-center justify-between">
+            <span className="font-sans font-medium text-[#C3CDBF]">BrandProof</span>
+            <span className="font-mono text-[10px] text-[#A7D76B] bg-[#A7D76B]/10 px-2 py-0.5 rounded-full border border-[#A7D76B]/20">v0.2.0</span>
           </div>
-          <div className="flex justify-between items-center">
-            <span>STORAGE:</span>
-            <span className="text-[#F4F1E8]">SQLITE 3</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span>AI CALLS:</span>
-            <span className="text-[#8D9D8E]">0 (DISCLOSED)</span>
-          </div>
+          <p className="text-[10px] text-[#8D9D8E] mt-1 font-sans">Brand Governance &amp; Intelligence</p>
         </div>
       </aside>
 
@@ -472,7 +498,7 @@ export default function BrandProofWorkspace() {
                     Brand Governance / Dashboard
                   </h1>
                   <p className="text-sm text-[#C3CDBF] mt-1">
-                    Live audit telemetry sourced directly from persistent SQLite storage.
+                    Live brand governance telemetry and verified audit logs.
                   </p>
                 </div>
 
@@ -534,7 +560,7 @@ export default function BrandProofWorkspace() {
                 </div>
 
                 {/* Quick Workflow Tiles */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] p-6 flex flex-col justify-between">
                     <div>
                       <div className="text-xs font-mono font-bold text-[#A7D76B] mb-2 uppercase">
@@ -588,6 +614,26 @@ export default function BrandProofWorkspace() {
                       View Review History ↗
                     </button>
                   </div>
+
+                  <div className="rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] p-6 flex flex-col justify-between">
+                    <div>
+                      <div className="text-xs font-mono font-bold text-[#A7D76B] mb-2 uppercase">
+                        04 / Intelligence Lab
+                      </div>
+                      <p className="text-sm text-[#C3CDBF] mb-6">
+                        Claim graphs, adversarial red-team benchmarks, multi-channel twins & explainability ledgers.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setActiveNav("lab");
+                        loadHistory();
+                      }}
+                      className="btn-forest-secondary text-xs w-full py-2.5"
+                    >
+                      Open Intelligence Lab ↗
+                    </button>
+                  </div>
                 </div>
 
                 {/* Recent Reviews Activity Table */}
@@ -597,7 +643,7 @@ export default function BrandProofWorkspace() {
                       Recent Compliance Activity
                     </h2>
                     <span className="text-xs text-[#8D9D8E] font-mono">
-                      Persisted in SQLite
+                      Verified Records
                     </span>
                   </div>
 
@@ -831,8 +877,8 @@ export default function BrandProofWorkspace() {
                       const decision = (review.human_decisions || []).find(
                         (d) => d.finding_id === f.id
                       );
-                      const isActing = actionInProgress[f.id];
-                      const err = actionError[f.id];
+                      const isActing = actionInProgress[`${review.review_id}:${f.id}`];
+                      const err = actionError[`${review.review_id}:${f.id}`];
 
                       return (
                         <div
@@ -909,57 +955,49 @@ export default function BrandProofWorkspace() {
                             </div>
                           )}
 
-                          {/* Human Decision Controls */}
-                          <div className="pt-4 border-t border-[rgba(230,240,224,0.08)] flex flex-wrap items-center justify-between gap-4 text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[#8D9D8E] font-mono">HUMAN DECISION:</span>
-                              {decision ? (
-                                <span
-                                  className={`font-mono font-semibold uppercase ${
-                                    decision.action === "accepted"
-                                      ? "text-[#A8D6A0]"
-                                      : "text-[#EF9187]"
-                                  }`}
-                                >
-                                  {decision.action === "accepted" ? "✓ Accepted" : "✕ Rejected"}
-                                </span>
-                              ) : (
-                                <span className="font-mono text-[#E5BD75] font-semibold">
-                                  ● Pending Human Review
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                              <button
-                                id={`accept-finding-${f.id}`}
-                                type="button"
-                                onClick={() => handleFindingAction(f.id, "accepted")}
-                                disabled={Boolean(isActing)}
-                                className="btn-forest-primary text-xs px-4 py-2"
-                              >
-                                {isActing === "accepted" ? "Recording..." : "Accept Suggestion"}
-                              </button>
-                              <button
-                                id={`reject-finding-${f.id}`}
-                                type="button"
-                                onClick={() => handleFindingAction(f.id, "rejected")}
-                                disabled={Boolean(isActing)}
-                                className="btn-forest-danger text-xs px-4 py-2"
-                              >
-                                {isActing === "rejected" ? "Recording..." : "Reject"}
-                              </button>
-                            </div>
+                          {/* Finding Action Header with Ask AI */}
+                          <div className="pt-3 border-t border-[rgba(230,240,224,0.08)] flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAssistantFindingId(f.id);
+                                const el = document.getElementById("reviewer-assistant-box");
+                                if (el) el.scrollIntoView({ behavior: "smooth" });
+                              }}
+                              className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[#A7D76B] hover:text-[#b6e47c] transition-colors"
+                            >
+                              <span>Ask AI Copilot about this claim →</span>
+                            </button>
+                            <span className="text-[10px] font-mono text-[#8D9D8E]">
+                              Finding {f.id.slice(0, 6)}
+                            </span>
                           </div>
 
-                          {err && (
-                            <div className="p-3 rounded-xl bg-[#EF9187]/15 text-[#EF9187] font-mono text-xs border border-[#EF9187]">
-                              Action Error: {err}
-                            </div>
-                          )}
+                          {/* Authoritative Human Decision Lifecycle Controls */}
+                          <div>
+                            <FindingDecisionControl
+                              reviewId={review.review_id}
+                              findingId={f.id}
+                              decision={decision}
+                              isActing={isActing}
+                              actionError={err}
+                              onDecide={(fId, action, rId) =>
+                                handleFindingAction(fId, action, rId)
+                              }
+                            />
+                          </div>
                         </div>
                       );
                     })}
+
+                    {/* Interactive Reviewer Assistant (Gemini AI Copilot) */}
+                    <div id="reviewer-assistant-box" className="pt-4">
+                      <ReviewerAssistant
+                        review={review}
+                        activeFindingId={assistantFindingId}
+                        onClearActiveFinding={() => setAssistantFindingId(null)}
+                      />
+                    </div>
 
                   </div>
                 )}
@@ -1141,7 +1179,7 @@ export default function BrandProofWorkspace() {
 
                 {historyLoading && !historyReviews && (
                   <div className="py-12 text-center text-xs text-[#8D9D8E] font-mono">
-                    Querying SQLite ledger...
+                    Loading audit records...
                   </div>
                 )}
 
@@ -1223,11 +1261,14 @@ export default function BrandProofWorkspace() {
                               onClick={() => {
                                 setReview(r);
                                 if (r.content) setContent(r.content);
+                                if (typeof window !== "undefined") {
+                                  sessionStorage.setItem("brandproof_active_review_id", r.review_id);
+                                }
                                 setActiveNav("review");
                               }}
-                              className="ml-auto text-xs text-[#A7D76B] hover:underline font-semibold"
+                              className="ml-auto text-xs text-[#A7D76B] hover:underline font-semibold cursor-pointer"
                             >
-                              Return to Editor ↗
+                              Open in Workspace ↗
                             </button>
                           </div>
 
@@ -1241,7 +1282,8 @@ export default function BrandProofWorkspace() {
                                 const decision = (r.human_decisions || []).find(
                                   (d) => d.finding_id === f.id
                                 );
-                                const isActing = actionInProgress[f.id];
+                                const isActing = actionInProgress[`${r.review_id}:${f.id}`];
+                                const err = actionError[`${r.review_id}:${f.id}`];
 
                                 return (
                                   <div
@@ -1271,50 +1313,18 @@ export default function BrandProofWorkspace() {
                                     )}
 
                                     {/* Action in History */}
-                                    <div className="flex items-center justify-between pt-2 border-t border-[rgba(230,240,224,0.06)]">
-                                      <div className="flex items-center gap-2 font-mono">
-                                        <span className="text-[#8D9D8E]">Status:</span>
-                                        {decision ? (
-                                          <span
-                                            className={`font-semibold uppercase ${
-                                              decision.action === "accepted"
-                                                ? "text-[#A8D6A0]"
-                                                : "text-[#EF9187]"
-                                            }`}
-                                          >
-                                            {decision.action === "accepted"
-                                              ? "✓ Accepted"
-                                              : "✕ Rejected"}
-                                          </span>
-                                        ) : (
-                                          <span className="text-[#E5BD75] font-semibold">
-                                            ● Pending
-                                          </span>
-                                        )}
-                                      </div>
-
-                                      <div className="flex items-center gap-2">
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            handleFindingAction(f.id, "accepted", r.review_id)
-                                          }
-                                          disabled={Boolean(isActing)}
-                                          className="btn-forest-primary text-[10px] px-3 py-1"
-                                        >
-                                          Accept
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            handleFindingAction(f.id, "rejected", r.review_id)
-                                          }
-                                          disabled={Boolean(isActing)}
-                                          className="btn-forest-danger text-[10px] px-3 py-1"
-                                        >
-                                          Reject
-                                        </button>
-                                      </div>
+                                    <div className="pt-2 border-t border-[rgba(230,240,224,0.06)]">
+                                      <FindingDecisionControl
+                                        reviewId={r.review_id}
+                                        findingId={f.id}
+                                        decision={decision}
+                                        isActing={isActing}
+                                        actionError={err}
+                                        onDecide={(fId, action, revId) =>
+                                          handleFindingAction(fId, action, revId)
+                                        }
+                                        compact={true}
+                                      />
                                     </div>
                                   </div>
                                 );
@@ -1329,68 +1339,14 @@ export default function BrandProofWorkspace() {
               </div>
             )}
 
-            {/* ══════════════ SETTINGS VIEW ══════════════ */}
-            {activeNav === "settings" && (
-              <div className="space-y-8">
-                {/* Header */}
-                <div className="border-b border-[rgba(230,240,224,0.08)] pb-6">
-                  <div className="text-xs font-mono text-[#A7D76B] uppercase tracking-wider mb-1">
-                    {"//"} System Configuration
-                  </div>
-                  <h1 className="text-3xl font-extrabold tracking-tight text-[#F4F1E8]">
-                    Workspace Settings
-                  </h1>
-                  <p className="text-sm text-[#C3CDBF] mt-1">
-                    Underlying environment parameters and transparent engine specifications.
-                  </p>
-                </div>
-
-                <div className="rounded-3xl bg-[#101F17] border border-[rgba(230,240,224,0.09)] p-6 sm:p-8 space-y-6 text-xs font-mono">
-                  
-                  <div className="flex flex-wrap items-center justify-between py-3 border-b border-[rgba(230,240,224,0.08)]">
-                    <span className="text-[#8D9D8E]">BRAND WORKSPACE IDENTIFIER</span>
-                    <span className="text-[#F4F1E8] font-bold">demo-brand</span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between py-3 border-b border-[rgba(230,240,224,0.08)]">
-                    <span className="text-[#8D9D8E]">ENGINE OPERATIONAL MODE</span>
-                    <span className="text-[#A7D76B] font-bold">rule_based_demo (deterministic)</span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between py-3 border-b border-[rgba(230,240,224,0.08)]">
-                    <span className="text-[#8D9D8E]">AI PROVIDER INVOCATION</span>
-                    <span className="text-[#A8D6A0] font-bold">NONE (0% AI Hallucination Risk)</span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between py-3 border-b border-[rgba(230,240,224,0.08)]">
-                    <span className="text-[#8D9D8E]">DATA PERSISTENCE BACKEND</span>
-                    <span className="text-[#F4F1E8]">SQLite (backend/brandproof.db)</span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between py-3 border-b border-[rgba(230,240,224,0.08)]">
-                    <span className="text-[#8D9D8E]">API BASE URL</span>
-                    <span className="text-[#8D9D8E]">{API_BASE_URL}</span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between py-3 border-b border-[rgba(230,240,224,0.08)]">
-                    <span className="text-[#8D9D8E]">API HEALTH STATUS</span>
-                    <span className="text-[#A7D76B] font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#A7D76B] pulse-led" />
-                      ONLINE (200 OK)
-                    </span>
-                  </div>
-
-                  <div className="p-5 rounded-2xl bg-[#0B1711] border border-[rgba(230,240,224,0.08)] text-[#C3CDBF] leading-relaxed font-sans text-xs">
-                    <span className="text-[#A7D76B] font-bold block mb-1 font-mono">
-                      INTEGRITY NOTICE:
-                    </span>
-                    BrandProof is designed for strict deterministic governance. All checks run
-                    through audited regex rules and token pattern matching. Decisions are recorded
-                    with human attribution directly in the local SQLite audit ledger.
-                  </div>
-
-                </div>
-              </div>
+            {/* ══════════════ INTELLIGENCE LAB VIEW ══════════════ */}
+            {activeNav === "lab" && (
+              <IntelligenceLab
+                currentReview={review}
+                historyReviews={historyReviews}
+                loadHistory={loadHistory}
+                onNavigateToReview={() => setActiveNav("review")}
+              />
             )}
 
           </div>

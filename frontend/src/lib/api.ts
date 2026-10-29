@@ -67,6 +67,23 @@ export interface ReviewResponse {
   content?: string | null;
 }
 
+export interface QuestionRequest {
+  question: string;
+  finding_id?: string | null;
+}
+
+export interface QuestionResponse {
+  review_id: string;
+  finding_id?: string | null;
+  question: string;
+  answer: string;
+  related_rule_ids: string[];
+  related_finding_ids: string[];
+  suggested_next_steps: string[];
+  source: "gemini_ai" | "deterministic_fallback";
+  model_name?: string | null;
+}
+
 export interface GuidelineItem {
   id: string;
   name: string;
@@ -138,22 +155,16 @@ function handleNetworkError(err: unknown, endpoint: string): never {
 
   let diagnostic: string;
   if (isCORSOrNetwork) {
-    const isLocalhost =
-      API_BASE_URL.includes("localhost") || API_BASE_URL.includes("127.0.0.1");
-
-    if (isLocalhost) {
-      diagnostic =
-        `Failed to reach local backend at ${API_BASE_URL}${endpoint}. ` +
-        `Please ensure the FastAPI service is running locally on port 8000 (e.g., uvicorn app.main:app --port 8000).`;
-    } else {
-      diagnostic =
-        `Failed to reach BrandProof API at ${API_BASE_URL}${endpoint} (${rawMsg}). ` +
-        `This typically indicates: 1) A CORS origin restriction blocking requests from this domain; ` +
-        `or 2) The Render backend is currently waking up from an idle spin-down (which can take 30–60s on free tiers). ` +
-        `Please verify that the backend is active at ${API_BASE_URL}/health.`;
-    }
+    diagnostic =
+      "Unable to connect to the compliance review service. " +
+      "Please check your network connection or try again in a few moments.";
   } else {
-    diagnostic = `Network request to ${API_BASE_URL}${endpoint} failed: ${rawMsg}`;
+    diagnostic = `Service request failed: ${rawMsg}`;
+  }
+
+  // Developer diagnostics logged to console only, not presented in user-facing UI strings
+  if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
+    console.warn(`[BrandProof API] ${endpoint} request failed:`, err);
   }
 
   throw new ApiError(diagnostic, undefined, true, endpoint);
@@ -394,6 +405,375 @@ export async function checkHealth(): Promise<{ status: string; service: string }
     }
 
     return (await res.json()) as { status: string; service: string };
+  } catch (err: unknown) {
+    handleNetworkError(err, endpoint);
+  }
+}
+
+// ─── Feature 1: Claim Intelligence Graph ──────────────────────────────────────
+
+export interface GraphNode {
+  id: string;
+  type: "claim" | "finding" | "rule" | "evidence" | string;
+  label: string;
+  category?: string;
+  status: string;
+  details: Record<string, unknown>;
+}
+
+export interface GraphEdge {
+  id: string;
+  source: string;
+  target: string;
+  label: string;
+  relationship: string;
+}
+
+export interface ClaimCandidate {
+  id: string;
+  category: string;
+  matched_text: string;
+  sentence: string;
+  reason: string;
+  confidence: string;
+  status: string;
+}
+
+export interface ClaimGraphResponse {
+  review_id?: string | null;
+  total_claims: number;
+  total_findings: number;
+  total_evidence_links: number;
+  claims: ClaimCandidate[];
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  verification_legend?: Record<string, string>;
+}
+
+export async function getClaimGraph(params: {
+  content?: string;
+  review_id?: string;
+}): Promise<ClaimGraphResponse> {
+  const endpoint = "/api/graph";
+  const url = `${API_BASE_URL}${endpoint}`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(params),
+    });
+    if (!res.ok) {
+      throw new ApiError(`Failed to build claim graph (${res.status})`, res.status, false, endpoint);
+    }
+    return (await res.json()) as ClaimGraphResponse;
+  } catch (err: unknown) {
+    handleNetworkError(err, endpoint);
+  }
+}
+
+// ─── Feature 2: Adversarial Red Team ──────────────────────────────────────────
+
+export interface RedTestCase {
+  case_id: string;
+  category: string;
+  input_text: string;
+  expected_rule_ids: string[];
+  description: string;
+  case_version: string;
+  is_positive: boolean;
+}
+
+export interface CaseExecutionResult {
+  case_id: string;
+  category: string;
+  input_text: string;
+  expected_rule_ids: string[];
+  actual_rule_ids: string[];
+  passed: boolean;
+  description: string;
+  failure_explanation?: string | null;
+  findings_count: number;
+}
+
+export interface RedTeamSummaryMetrics {
+  total_cases: number;
+  executed_cases: number;
+  passed_cases: number;
+  failed_cases: number;
+  expected_outcome_pass_rate: number;
+  true_positives: number;
+  false_positives: number;
+  true_negatives: number;
+  false_negatives: number;
+  recall?: number | null;
+  precision?: number | null;
+  f1_score?: number | null;
+  execution_duration_ms: number;
+}
+
+export interface RedTeamSuiteResponse {
+  suite_version: string;
+  executed_at: string;
+  evaluator_version: string;
+  metrics: RedTeamSummaryMetrics;
+  results: CaseExecutionResult[];
+  metric_definitions?: Record<string, string>;
+}
+
+export async function runRedTeamSuite(): Promise<RedTeamSuiteResponse> {
+  const endpoint = "/api/red-team/run";
+  const url = `${API_BASE_URL}${endpoint}`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) {
+      throw new ApiError(`Failed to run Red Team suite (${res.status})`, res.status, false, endpoint);
+    }
+    return (await res.json()) as RedTeamSuiteResponse;
+  } catch (err: unknown) {
+    handleNetworkError(err, endpoint);
+  }
+}
+
+export async function getRedTeamCases(): Promise<{ cases: RedTestCase[]; total: number }> {
+  const endpoint = "/api/red-team/cases";
+  const url = `${API_BASE_URL}${endpoint}`;
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) {
+      throw new ApiError(`Failed to fetch Red Team cases (${res.status})`, res.status, false, endpoint);
+    }
+    return (await res.json()) as { cases: RedTestCase[]; total: number };
+  } catch (err: unknown) {
+    handleNetworkError(err, endpoint);
+  }
+}
+
+// ─── Feature 3: Campaign Risk Digital Twin ────────────────────────────────────
+
+export interface ChannelEvaluation {
+  channel_id: string;
+  display_name: string;
+  content_fingerprint: string;
+  risk_score: number;
+  risk_band: "Low" | "Guarded" | "Moderate" | "High" | "Critical" | string;
+  status: string;
+  score_explanation: string;
+  findings_count: number;
+  severity_breakdown: Record<string, number>;
+  triggered_rule_ids: string[];
+  shared_rule_findings: number;
+  channel_specific_findings: number;
+  missing_disclaimer_warnings: string[];
+  findings: Finding[];
+}
+
+export interface DigitalTwinResponse {
+  input_fingerprint: string;
+  content_length: number;
+  evaluated_at: string;
+  channels: Record<string, ChannelEvaluation>;
+  summary_comparison: {
+    highest_risk_channel: string;
+    highest_risk_score: number;
+    lowest_risk_channel: string;
+    lowest_risk_score: number;
+    shared_core_findings: number;
+  };
+  scoring_methodology?: Record<string, unknown>;
+}
+
+export async function evaluateDigitalTwin(params: {
+  content?: string;
+  review_id?: string;
+}): Promise<DigitalTwinResponse> {
+  const endpoint = "/api/digital-twin/evaluate";
+  const url = `${API_BASE_URL}${endpoint}`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(params),
+    });
+    if (!res.ok) {
+      throw new ApiError(`Failed to evaluate Digital Twin (${res.status})`, res.status, false, endpoint);
+    }
+    return (await res.json()) as DigitalTwinResponse;
+  } catch (err: unknown) {
+    handleNetworkError(err, endpoint);
+  }
+}
+
+// ─── Feature 4: Policy Change Impact Simulator ────────────────────────────────
+
+export interface ClassifiedFinding {
+  finding_id: string;
+  rule_id: string;
+  severity: Severity;
+  text: string;
+  reason: string;
+  suggestion: string;
+  classification: "unchanged" | "resolved_in_simulation" | "newly_flagged" | "severity_changed" | string;
+  note: string;
+}
+
+export interface PolicySimulationSummary {
+  baseline_findings_count: number;
+  simulated_findings_count: number;
+  net_change: number;
+  unchanged_count: number;
+  resolved_count: number;
+  newly_flagged_count: number;
+  active_rules_count: number;
+  disabled_rules_count: number;
+}
+
+export interface PolicySimulationResponse {
+  review_id?: string | null;
+  is_simulation: boolean;
+  notice: string;
+  disabled_rule_ids: string[];
+  summary: PolicySimulationSummary;
+  findings: ClassifiedFinding[];
+}
+
+export async function runPolicySimulation(params: {
+  content?: string;
+  review_id?: string;
+  disabled_rule_ids: string[];
+}): Promise<PolicySimulationResponse> {
+  const endpoint = "/api/simulator/run";
+  const url = `${API_BASE_URL}${endpoint}`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(params),
+    });
+    if (!res.ok) {
+      throw new ApiError(`Failed to run policy simulation (${res.status})`, res.status, false, endpoint);
+    }
+    return (await res.json()) as PolicySimulationResponse;
+  } catch (err: unknown) {
+    handleNetworkError(err, endpoint);
+  }
+}
+
+// ─── Feature 5: Trust Ledger & Explainability ─────────────────────────────────
+
+export interface TrustLedgerExport {
+  schema_version: string;
+  review_id: string;
+  review_created_at?: string | null;
+  audit_generated_at: string;
+  content_fingerprint: string;
+  fingerprint_algorithm: string;
+  fingerprint_encoding: string;
+  content_length: number;
+  content_excerpt: string;
+  channel: string;
+  policy_evaluator_version: string;
+  triggered_rule_ids: string[];
+  findings: Record<string, unknown>[];
+  evidence_references: string[];
+  human_decisions: Record<string, unknown>[];
+  unavailable_fields: string[];
+  verification_status: string;
+  disclaimer: string;
+}
+
+export interface AuditVerificationResult {
+  status: "MATCH" | "MISMATCH" | "CANNOT_VERIFY" | string;
+  computed_fingerprint?: string | null;
+  expected_fingerprint?: string | null;
+  fingerprint_algorithm: string;
+  verified_at: string;
+  explanation: string;
+  limitations: string;
+}
+
+export async function getTrustLedger(reviewId: string): Promise<TrustLedgerExport> {
+  const endpoint = `/api/reviews/${encodeURIComponent(reviewId)}/ledger`;
+  const url = `${API_BASE_URL}${endpoint}`;
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) {
+      throw new ApiError(`Failed to retrieve Trust Ledger (${res.status})`, res.status, false, endpoint);
+    }
+    return (await res.json()) as TrustLedgerExport;
+  } catch (err: unknown) {
+    handleNetworkError(err, endpoint);
+  }
+}
+
+export async function verifyTrustLedger(params: {
+  content?: string;
+  expected_fingerprint?: string;
+}): Promise<AuditVerificationResult> {
+  const endpoint = "/api/ledger/verify";
+  const url = `${API_BASE_URL}${endpoint}`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(params),
+    });
+    if (!res.ok) {
+      throw new ApiError(`Verification request failed (${res.status})`, res.status, false, endpoint);
+    }
+    return (await res.json()) as AuditVerificationResult;
+  } catch (err: unknown) {
+    handleNetworkError(err, endpoint);
+  }
+}
+
+/**
+ * Submit a reviewer question regarding this review or an individual finding.
+ * Powered by Google Gemini AI with deterministic fallback.
+ */
+export async function askReviewQuestion(
+  reviewId: string,
+  payload: QuestionRequest
+): Promise<QuestionResponse> {
+  const endpoint = `/api/reviews/${reviewId}/questions`;
+  const url = `${API_BASE_URL}${endpoint}`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => null);
+      const detail = errorBody?.detail || `Review question API failed with status ${res.status}`;
+      throw new ApiError(detail, res.status, false, endpoint);
+    }
+
+    return (await res.json()) as QuestionResponse;
   } catch (err: unknown) {
     handleNetworkError(err, endpoint);
   }

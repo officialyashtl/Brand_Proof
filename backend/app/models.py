@@ -107,3 +107,34 @@ class ReviewResponse(BaseModel):
     content: Optional[str] = None
 
     model_config = {"populate_by_name": True}
+
+
+class QuestionRequest(BaseModel):
+    question: str = Field(..., min_length=1, max_length=2000, description="Reviewer question regarding this review or finding")
+    finding_id: Optional[str] = Field(None, description="Optional ID of specific finding to scope the question to")
+
+    @field_validator("question")
+    @classmethod
+    def question_not_blank(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("question must not be blank or whitespace-only")
+        return v.strip()
+
+
+class QuestionResponse(BaseModel):
+    review_id: str
+    finding_id: Optional[str] = None
+    question: str
+    answer: str
+    related_rule_ids: List[str] = Field(default_factory=list)
+    related_finding_ids: List[str] = Field(default_factory=list)
+    suggested_next_steps: List[str] = Field(default_factory=list)
+    source: Literal["gemini_ai", "deterministic_fallback"]
+    model_name: Optional[str] = None
+
+
+ReviewRequest.model_rebuild()
+DecisionRequest.model_rebuild()
+ReviewResponse.model_rebuild()
+QuestionRequest.model_rebuild()
+QuestionResponse.model_rebuild()

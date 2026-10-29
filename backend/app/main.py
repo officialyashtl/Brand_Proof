@@ -19,14 +19,26 @@ from __future__ import annotations
 import os
 import uuid
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Dict, List
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from .database import init_db, load_all_reviews, load_review, save_decision, save_review
-from .models import DecisionAction, DecisionRequest, ReviewRequest, ReviewResponse
+from .models import DecisionAction, DecisionRequest, QuestionRequest, QuestionResponse, ReviewRequest, ReviewResponse
 from .rules import run_rules
+from .gemini_service import ask_reviewer_question
+from .claim_graph import ClaimGraphResponse, build_claim_graph
+from .red_team import RED_TEAM_LIBRARY, RedTeamSuiteResponse, run_red_team_suite
+from .digital_twin import DigitalTwinResponse, evaluate_digital_twin
+from .simulator import PolicySimulationResponse, simulate_policy
+from .trust_ledger import (
+    AuditVerificationResult,
+    TrustLedgerExport,
+    generate_trust_ledger,
+    verify_content_integrity,
+)
 
 # ─── App setup ────────────────────────────────────────────────────────────────
 
@@ -200,6 +212,38 @@ def record_decision(review_id: str, body: DecisionRequest) -> ReviewResponse:
     return updated
 
 
+@app.post(
+    "/api/reviews/{review_id}/questions",
+    response_model=QuestionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Ask an intelligent compliance question about a review or specific finding",
+)
+def ask_question(review_id: str, body: QuestionRequest) -> QuestionResponse:
+    """
+    Submit a reviewer question regarding this review or an individual finding.
+
+    Grounded in the review's content, detected findings, and recorded human decisions.
+    Powered by Google Gemini API with fallback to deterministic compliance intelligence.
+    Does NOT mutate review or decision records.
+    """
+    review = load_review(review_id)
+    if review is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Review '{review_id}' not found.",
+        )
+
+    if body.finding_id:
+        finding_exists = any(f.id == body.finding_id for f in review.findings)
+        if not finding_exists:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Finding '{body.finding_id}' not found in review '{review_id}'.",
+            )
+
+    return ask_reviewer_question(review=review, question=body.question, finding_id=body.finding_id)
+
+
 # ─── Guidelines & Metrics endpoints ──────────────────────────────────────────
 
 
@@ -297,3 +341,196 @@ def get_metrics() -> Dict[str, Any]:
         "compliance_score": compliance_score,
     }
 
+
+# ─── Feature Request Schemas ──────────────────────────────────────────────────
+
+
+class GraphRequest(BaseModel):
+    content: Optional[str] = None
+    review_id: Optional[str] = None
+
+
+class DigitalTwinRequest(BaseModel):
+    content: Optional[str] = None
+    review_id: Optional[str] = None
+
+
+class SimulationRequest(BaseModel):
+    content: Optional[str] = None
+    review_id: Optional[str] = None
+    disabled_rule_ids: List[str] = []
+
+
+class LedgerVerifyRequest(BaseModel):
+    content: Optional[str] = None
+    expected_fingerprint: Optional[str] = None
+
+
+GraphRequest.model_rebuild()
+DigitalTwinRequest.model_rebuild()
+SimulationRequest.model_rebuild()
+LedgerVerifyRequest.model_rebuild()
+
+
+# ─── Feature 1: Claim Intelligence Graph ─────────────────────────────────────
+
+
+@app.post(
+    "/api/graph",
+    response_model=ClaimGraphResponse,
+    summary="Generate Claim Intelligence Graph from content or review",
+)
+def generate_graph(body: GraphRequest) -> ClaimGraphResponse:
+    content = body.content
+    findings: List[Any] = []
+    review_id = body.review_id
+
+    if review_id:
+        review = load_review(review_id)
+        if review is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Review '{review_id}' not found.",
+            )
+        content = review.content or ""
+        findings = review.findings
+    elif content and content.strip():
+        findings = run_rules(content)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Must supply either 'content' or valid 'review_id'.",
+        )
+
+    return build_claim_graph(content, findings, review_id)
+
+
+@app.get(
+    "/api/reviews/{review_id}/graph",
+    response_model=ClaimGraphResponse,
+    summary="Get Claim Intelligence Graph for a specific saved review",
+)
+def get_review_graph(review_id: str) -> ClaimGraphResponse:
+    review = load_review(review_id)
+    if review is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Review '{review_id}' not found.",
+        )
+    return build_claim_graph(review.content or "", review.findings, review_id)
+
+
+# ─── Feature 2: Adversarial Brand Red Team ───────────────────────────────────
+
+
+@app.post(
+    "/api/red-team/run",
+    response_model=RedTeamSuiteResponse,
+    summary="Execute Adversarial Brand Red Team test suite",
+)
+def execute_red_team() -> RedTeamSuiteResponse:
+    return run_red_team_suite()
+
+
+@app.get(
+    "/api/red-team/cases",
+    summary="List available Red Team benchmark test cases",
+)
+def list_red_team_cases() -> Dict[str, Any]:
+    return {
+        "cases": [case.model_dump() for case in RED_TEAM_LIBRARY],
+        "total": len(RED_TEAM_LIBRARY),
+    }
+
+
+# ─── Feature 3: Campaign Risk Digital Twin ───────────────────────────────────
+
+
+@app.post(
+    "/api/digital-twin/evaluate",
+    response_model=DigitalTwinResponse,
+    summary="Evaluate content across Website, Social, and Paid Ad channels",
+)
+def evaluate_twin(body: DigitalTwinRequest) -> DigitalTwinResponse:
+    content = body.content
+    if body.review_id:
+        review = load_review(body.review_id)
+        if review is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Review '{body.review_id}' not found.",
+            )
+        content = review.content or ""
+
+    if not content or not content.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Content must not be blank for Digital Twin evaluation.",
+        )
+
+    return evaluate_digital_twin(content)
+
+
+# ─── Feature 4: Policy Change Impact Simulator ───────────────────────────────
+
+
+@app.post(
+    "/api/simulator/run",
+    response_model=PolicySimulationResponse,
+    summary="Simulate policy modifications in isolated in-memory environment",
+)
+def run_simulation(body: SimulationRequest) -> PolicySimulationResponse:
+    content = body.content
+    baseline_findings: List[Any] = []
+    review_id = body.review_id
+
+    if review_id:
+        review = load_review(review_id)
+        if review is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Review '{review_id}' not found.",
+            )
+        content = review.content or ""
+        baseline_findings = review.findings
+    elif content and content.strip():
+        baseline_findings = run_rules(content)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Must supply content or valid review_id for simulation.",
+        )
+
+    return simulate_policy(
+        content=content,
+        baseline_findings=baseline_findings,
+        disabled_rule_ids=body.disabled_rule_ids,
+        review_id=review_id,
+    )
+
+
+# ─── Feature 5: Trust Ledger & Explainability ────────────────────────────────
+
+
+@app.get(
+    "/api/reviews/{review_id}/ledger",
+    response_model=TrustLedgerExport,
+    summary="Generate cryptographic audit ledger for a saved review",
+)
+def get_ledger(review_id: str) -> TrustLedgerExport:
+    review = load_review(review_id)
+    if review is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Review '{review_id}' not found.",
+        )
+    return generate_trust_ledger(review)
+
+
+@app.post(
+    "/api/ledger/verify",
+    response_model=AuditVerificationResult,
+    summary="Verify content integrity against an expected SHA-256 fingerprint",
+)
+def verify_ledger(body: LedgerVerifyRequest) -> AuditVerificationResult:
+    return verify_content_integrity(body.content, body.expected_fingerprint)

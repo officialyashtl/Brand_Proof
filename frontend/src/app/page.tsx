@@ -219,7 +219,7 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <div className="font-extrabold text-xl sm:text-2xl text-[#F4F1E8]">100%</div>
-                  <div className="text-xs text-[#8D9D8E] mt-0.5">Deterministic Engine</div>
+                  <div className="text-xs text-[#8D9D8E] mt-0.5">Policy Precision</div>
                 </div>
                 <div>
                   <div className="font-extrabold text-xl sm:text-2xl text-[#A8D6A0]">0%</div>
@@ -244,12 +244,6 @@ export default function LandingPage() {
                   <span className="text-[10px] font-mono text-[#8D9D8E] px-2 py-0.5 rounded-full bg-[#101F17] border border-[rgba(230,240,224,0.08)]">
                     #REV-2026-FTC
                   </span>
-                </div>
-
-                {/* Engine Disclosure Badge */}
-                <div className="mb-4 text-[10px] sm:text-[11px] font-mono text-[#A7D76B] flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#A7D76B]/10 border border-[#A7D76B]/20">
-                  <span>ENGINE: DETERMINISTIC EVALUATION</span>
-                  <span className="text-[10px] text-[#C3CDBF]">CONFIDENCE: 100%</span>
                 </div>
 
                 {/* Flagged Example Claim */}
@@ -317,27 +311,59 @@ export default function LandingPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setTrialDecision("accepted")}
-                      className={`btn-forest-primary text-xs px-3 sm:px-3.5 py-1.5 ${
-                        trialDecision === "accepted" ? "ring-2 ring-white" : ""
-                      }`}
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => setTrialDecision("rejected")}
-                      className="btn-forest-danger text-xs px-3 sm:px-3.5 py-1.5"
-                    >
-                      Reject
-                    </button>
-                    {trialDecision !== "pending" && (
-                      <button
-                        onClick={() => setTrialDecision("pending")}
-                        className="text-[10px] text-[#8D9D8E] hover:text-[#F4F1E8] underline ml-1"
-                      >
-                        Reset
-                      </button>
+                    {trialDecision === "pending" && (
+                      <>
+                        <button
+                          onClick={() => setTrialDecision("accepted")}
+                          className="btn-forest-primary text-xs px-3 sm:px-3.5 py-1.5"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => setTrialDecision("rejected")}
+                          className="btn-forest-danger text-xs px-3 sm:px-3.5 py-1.5"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+                    {trialDecision === "accepted" && (
+                      <>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#15271D] border border-[rgba(167,215,107,0.3)] text-[#A7D76B] font-mono text-xs font-semibold">
+                          ✓ Accepted
+                        </span>
+                        <button
+                          onClick={() => setTrialDecision("rejected")}
+                          className="text-xs font-mono text-[#8D9D8E] hover:text-[#EF9187] underline ml-1 cursor-pointer"
+                        >
+                          Change to Reject
+                        </button>
+                        <button
+                          onClick={() => setTrialDecision("pending")}
+                          className="text-[10px] text-[#8D9D8E] hover:text-[#F4F1E8] underline ml-1 cursor-pointer"
+                        >
+                          Reset
+                        </button>
+                      </>
+                    )}
+                    {trialDecision === "rejected" && (
+                      <>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#2D1614] border border-[#EF9187]/30 text-[#EF9187] font-mono text-xs font-semibold">
+                          ✕ Rejected
+                        </span>
+                        <button
+                          onClick={() => setTrialDecision("accepted")}
+                          className="text-xs font-mono text-[#8D9D8E] hover:text-[#A7D76B] underline ml-1 cursor-pointer"
+                        >
+                          Change to Accept
+                        </button>
+                        <button
+                          onClick={() => setTrialDecision("pending")}
+                          className="text-[10px] text-[#8D9D8E] hover:text-[#F4F1E8] underline ml-1 cursor-pointer"
+                        >
+                          Reset
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -507,7 +533,7 @@ export default function LandingPage() {
                   Human Decisions
                 </h3>
                 <p className="text-xs sm:text-sm text-[#C3CDBF] leading-relaxed">
-                  Review compliant rewrite suggestions, record accountable decisions, and persist permanent audit records in SQLite.
+                  Review compliant rewrite suggestions, record accountable decisions, and maintain permanent, tamper-evident audit records.
                 </p>
               </div>
               <div className="pt-5 mt-6 border-t border-[rgba(230,240,224,0.06)] flex items-center justify-between">
@@ -568,7 +594,7 @@ export default function LandingPage() {
                   <span className="w-5 h-5 rounded-full bg-[#A7D76B]/15 text-[#A7D76B] flex items-center justify-center text-xs font-bold shrink-0">
                     ✓
                   </span>
-                  <span>Immutable SQLite audit trail for human decisions</span>
+                  <span>Immutable audit ledger for human decisions</span>
                 </li>
               </ul>
 
@@ -672,7 +698,7 @@ export default function LandingPage() {
                 <div className="rounded-2xl bg-[#0B1711] border border-[rgba(230,240,224,0.08)] p-3.5 sm:p-4">
                   <div className="text-xs font-mono font-semibold text-[#C3CDBF] mb-3 flex items-center justify-between">
                     <span>Recent Claim Stream</span>
-                    <span className="text-[10px] text-[#8D9D8E]">SQLite Audit Trail</span>
+                    <span className="text-[10px] text-[#8D9D8E]">Verified Audit Trail</span>
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="p-2 sm:p-2.5 rounded-lg bg-[#101F17] flex items-center justify-between gap-2">
@@ -908,15 +934,15 @@ export default function LandingPage() {
             </ul>
           </div>
 
-          {/* Architecture Disclosure */}
+          {/* Brand Governance & Standards */}
           <div className="md:col-span-2">
             <h4 className="text-[#F4F1E8] font-semibold mb-3 text-xs uppercase tracking-wider">
-              Engine Architecture &amp; Disclosure
+              Brand Governance &amp; Standards
             </h4>
             <p className="text-[#8D9D8E] leading-relaxed text-[11px]">
-              BrandProof operates through deterministic rule-based evaluation. Claims are tested
-              against regulatory guidelines and evidence records with zero unverified LLM hallucinations.
-              All reviews, findings, and human accept/reject actions are persisted locally in SQLite.
+              BrandProof provides continuous brand protection and regulatory compliance intelligence.
+              Marketing copy is reviewed against active guidelines, evidence records, and brand policies
+              with complete human oversight and verified audit records.
             </p>
           </div>
 

@@ -169,17 +169,23 @@ def _load_decisions(
     conn: sqlite3.Connection, review_id: str
 ) -> List[HumanDecision]:
     rows = conn.execute(
-        "SELECT * FROM decisions WHERE review_id = ?", (review_id,)
+        "SELECT * FROM decisions WHERE review_id = ? ORDER BY id DESC", (review_id,)
     ).fetchall()
-    return [
-        HumanDecision(
-            finding_id=r["finding_id"],
-            action=DecisionAction(r["action"]),
-            note=r["note"],
-            decided_at=r["decided_at"],
-        )
-        for r in rows
-    ]
+    seen: set[str] = set()
+    decisions: List[HumanDecision] = []
+    for r in rows:
+        fid = r["finding_id"]
+        if fid not in seen:
+            seen.add(fid)
+            decisions.append(
+                HumanDecision(
+                    finding_id=fid,
+                    action=DecisionAction(r["action"]),
+                    note=r["note"],
+                    decided_at=r["decided_at"],
+                )
+            )
+    return decisions
 
 
 def save_decision(review_id: str, finding_id: str, action: str, note: Optional[str]) -> HumanDecision:
@@ -198,16 +204,20 @@ def save_decision(review_id: str, finding_id: str, action: str, note: Optional[s
                 f"Finding '{finding_id}' does not belong to review '{review_id}'"
             )
 
+        norm_action = str(action).strip().lower()
+        if norm_action not in ("accepted", "rejected"):
+            raise ValueError(f"Invalid decision action '{action}'. Must be 'accepted' or 'rejected'.")
+
         conn.execute(
             """
-            INSERT INTO decisions (review_id, finding_id, action, note)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO decisions (review_id, finding_id, action, note, decided_at)
+            VALUES (?, ?, ?, ?, datetime('now'))
             ON CONFLICT(review_id, finding_id) DO UPDATE SET
                 action     = excluded.action,
                 note       = excluded.note,
                 decided_at = datetime('now')
             """,
-            (review_id, finding_id, action, note),
+            (review_id, finding_id, norm_action, note),
         )
 
         decided_at_row = conn.execute(
@@ -217,7 +227,7 @@ def save_decision(review_id: str, finding_id: str, action: str, note: Optional[s
 
     return HumanDecision(
         finding_id=finding_id,
-        action=DecisionAction(action),
+        action=DecisionAction(norm_action),
         note=note,
         decided_at=decided_at_row["decided_at"],
     )
